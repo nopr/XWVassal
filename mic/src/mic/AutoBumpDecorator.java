@@ -32,9 +32,7 @@ import mic.manuvers.ManeuverPaths;
 import mic.manuvers.PathPart;
 
 import static java.awt.event.InputEvent.ALT_DOWN_MASK;
-import static mic.Util.logToChat;
-import static mic.Util.logToChatWithTime;
-import static mic.Util.newPiece;
+import static mic.Util.*;
 
 
 /**
@@ -254,7 +252,7 @@ public class AutoBumpDecorator extends Decorator implements EditablePiece {
             if(!"Contested Sector".equals(getMap().getMapName())) return innerCommand;
 
 
-            logToChatWithTime("* --- " + yourShipName + " performs move: " + path.getFullName());
+            innerCommand.append(logToChatWithTimeCommand("* --- " + yourShipName + " performs move: " + path.getFullName()));
 
             //Check for template shape overlap with mines, asteroids, debris
             checkTemplateOverlap(lastMoveShapeUsed, otherBumpableShapes);
@@ -403,12 +401,6 @@ return innerCommand;
 
         if (!pilotName.equals("")) { yourShipName += " " + pilotName; }
         if (!shipName.equals("")) { yourShipName += " (" + shipName + ")"; }
-
-        /*
-        if (this.getProperty("Pilot Name").toString().length() > 0) { yourShipName += " " + b.getProperty("Pilot Name").toString(); }
-        if (this.getProperty("Craft ID #").toString().length() > 0) { yourShipName += " (" + b.getProperty("Craft ID #").toString() + ")"; }
-        */
-
         return yourShipName;
     }
     /**
