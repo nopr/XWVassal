@@ -119,10 +119,7 @@ public class Util {
         String theTime = sdf.format(currentTime);
 
         Command c = new Chatter.DisplayText(GameModule.getGameModule().getChatter(), "* (" + theTime + ")" + msg);
-        c.execute();1) on the map: the undo button will both cancel the move and its announcement in 1 click instead of 2
-
-                [12:29]
-        no matter how complex the move
+        c.execute();
         return c;
     }
 
