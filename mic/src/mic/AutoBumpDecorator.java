@@ -138,30 +138,30 @@ public class AutoBumpDecorator extends Decorator implements EditablePiece {
     private Command spawnRotatedPiece() {
 
         GamePiece piece = newPiece(findPieceSlotByID(lastManeuver.getAide_gpID()));
+
+        //apply the template aide angle rotation
         FreeRotator fR = (FreeRotator)Decorator.getDecorator(piece, FreeRotator.class);
 
-
-
-        //work in up-facing, local coordinates first
-        double x = isLargeShip(this) ? lastManeuver.getAide_xLarge() : lastManeuver.getAide_x();
-        double y = isLargeShip(this) ? lastManeuver.getAide_yLarge() : lastManeuver.getAide_y();
-        int posx =  (int)x;
-        int posy =  (int)y;
+        //work in up-facing, local coordinates first, with template aide offsets
+        int posx = (int) (isLargeShip(this) ? lastManeuver.getAide_xLarge() : lastManeuver.getAide_x());
+        int posy = (int) (isLargeShip(this) ? lastManeuver.getAide_yLarge() : lastManeuver.getAide_y());
         Point tOff = new Point(posx, posy);
 
+        //apply the template aide offset
         piece.setPosition(tOff);
 
-        //work the global (map) coordinates second
-        double shipx = this.getPosition().getX();
-        double shipy = this.getPosition().getY();
-        Point shipPt = new Point((int) shipx, (int) shipy);
+        //work the ship in global (map) coordinates second
+        int shipx = (int) this.getPosition().getX();
+        int shipy = (int) this.getPosition().getY();
+
+        Point shipPt = new Point(posx + (int)shipx, posy + (int)shipy);
 
         fR.setAngle(-lastManeuver.getTemplateAngle());
         fR.setAngle(fR.getAngle() + this.getRotator().getAngle());
         piece.setPosition(shipPt);
 
 
-        Command placeCommand = getMap().placeOrMerge(piece, new Point((int)piece.getPosition().getX(), (int)piece.getPosition().getY()));
+        Command placeCommand = getMap().placeOrMerge(piece, shipPt);
 
         return placeCommand;
     }
