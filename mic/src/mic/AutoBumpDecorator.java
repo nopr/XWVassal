@@ -140,8 +140,8 @@ public class AutoBumpDecorator extends Decorator implements EditablePiece {
         GamePiece piece = newPiece(findPieceSlotByID(lastManeuver.getAide_gpID()));
 
         //apply the template aide angle rotation
-        FreeRotator fR = (FreeRotator)Decorator.getDecorator(piece, FreeRotator.class);
 
+/*
         //work in up-facing, local coordinates first, with template aide offsets
         int posx = (int) (isLargeShip(this) ? lastManeuver.getAide_xLarge() : lastManeuver.getAide_x());
         int posy = (int) (isLargeShip(this) ? lastManeuver.getAide_yLarge() : lastManeuver.getAide_y());
@@ -160,8 +160,69 @@ public class AutoBumpDecorator extends Decorator implements EditablePiece {
         fR.setAngle(fR.getAngle() + this.getRotator().getAngle());
         piece.setPosition(shipPt);
 
+        */
+/*
+        Shape rawShape = getRawShape(bumpable);
+        Shape transformed = AffineTransform
+                .getTranslateInstance(bumpable.getPosition().getX(), bumpable.getPosition().getY())
+                .createTransformedShape(rawShape);
 
-        Command placeCommand = getMap().placeOrMerge(piece, shipPt);
+        FreeRotator rotator = (FreeRotator) (Decorator.getDecorator(Decorator.getOutermost(bumpable), FreeRotator.class));
+        double centerX = bumpable.getPosition().getX();
+        double centerY = bumpable.getPosition().getY();
+        transformed = AffineTransform
+                .getRotateInstance(rotator.getAngleInRadians(), centerX, centerY)
+                .createTransformedShape(transformed);
+        */
+
+        Shape aideRect = piece.boundingBox();
+logToChat("ship: x= " + Integer.toString((int)this.getPosition().getX()) + " y= " + Integer.toString((int)this.getPosition().getY()));
+logToChat("piece: x= " + Integer.toString((int)piece.getPosition().getX()) + " y= " + Integer.toString((int)piece.getPosition().getY()));
+logToChat("bound: x= " + Integer.toString(aideRect.getBounds().x) + " y= " + Integer.toString(aideRect.getBounds().y));
+        Shape transformed = AffineTransform
+                .getTranslateInstance(-piece.getShape().getBounds().getWidth()/2+409, -piece.getShape().getBounds().getWidth()/2+233)
+                .createTransformedShape(aideRect);
+        logToChat("after centering on pivot point");
+        logToChat("trans: x= " + Integer.toString((int)transformed.getBounds().getX()) + " y= " + Integer.toString((int)transformed.getBounds().getY()));
+
+
+        FreeRotator fR = (FreeRotator)Decorator.getDecorator(piece, FreeRotator.class);
+
+        transformed = AffineTransform
+                .getRotateInstance(-lastManeuver.getTemplateAngle()+this.getRotator().getAngle(), 0, 0)
+                .createTransformedShape(transformed);
+
+        logToChat("after rotation");
+        logToChat("trans: x= " + Integer.toString((int)transformed.getBounds().getX()) + " y= " + Integer.toString((int)transformed.getBounds().getY()));
+
+        transformed = AffineTransform
+                .getTranslateInstance(this.getPosition().getX(), this.getPosition().getY())
+                .createTransformedShape(transformed);
+        logToChat("after moving to ship");
+        logToChat("trans: x= " + Integer.toString((int)transformed.getBounds().getX()) + " y= " + Integer.toString((int)transformed.getBounds().getY()));
+
+        piece.setPosition(new Point((int)transformed.getBounds().getX(),(int)transformed.getBounds().getY()));
+        fR.setAngle(-lastManeuver.getTemplateAngle()+this.getRotator().getAngle());
+
+        /*
+        FreeRotator fR = (FreeRotator)Decorator.getDecorator(piece, FreeRotator.class);
+        double centerX = piece.getPosition().getX();
+        double centerY = piece.getPosition().getY();
+        transformed = AffineTransform
+                .getRotateInstance(myRotator.getAngleInRadians(), centerX, centerY)
+                .createTransformedShape(transformed);
+*/
+
+/*
+
+piece.setPosition(new Point((int)(0-piece.getShape().getBounds().getWidth()/2+409),(int)(0-piece.getShape().getBounds().getHeight()/2+233)));
+fR.setPivot(409,233);
+fR.setAngle(fR.getAngle() - lastManeuver.getTemplateAngle()+this.getRotator().getAngle());
+*/
+       // Point shipPt = new Point((int)(this.getPosition().getX()),(int)(this.getPosition().getY()));
+
+
+        Command placeCommand = getMap().placeOrMerge(piece, new Point((int)piece.getPosition().getX(),(int)piece.getPosition().getY()));
 
         return placeCommand;
     }
