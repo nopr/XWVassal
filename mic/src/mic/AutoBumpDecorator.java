@@ -161,7 +161,7 @@ logToChat("aide " + Double.toString(aideAngle) + " ship " + Double.toString(ship
                 .createTransformedShape(transformed);
 
         transformed = AffineTransform
-                .getTranslateInstance(-29,63)
+                .getTranslateInstance(29,-57)
                 .createTransformedShape(transformed);
 
 
@@ -180,7 +180,7 @@ logToChat("aide " + Double.toString(aideAngle) + " ship " + Double.toString(ship
 
 
 
-        piece.setPosition(new Point((int)transformed.getBounds().getCenterX(),(int)transformed.getBounds().getCenterY()));
+        piece.setPosition(transformed.getBounds().getLocation());
         fR.setAngle((int)totalAngle);
 
         Command placeCommand = getMap().placeOrMerge(piece, new Point((int)piece.getPosition().getX(),(int)piece.getPosition().getY()));
