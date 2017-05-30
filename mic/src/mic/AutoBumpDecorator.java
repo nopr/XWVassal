@@ -14,6 +14,7 @@ import javax.swing.*;
 import VASSAL.build.GameModule;
 import VASSAL.build.module.map.boardPicker.Board;
 import VASSAL.build.widget.PieceSlot;
+import VASSAL.counters.*;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
@@ -23,12 +24,6 @@ import VASSAL.command.ChangeTracker;
 import VASSAL.command.Command;
 import VASSAL.command.MoveTracker;
 import VASSAL.configure.HotKeyConfigurer;
-import VASSAL.counters.Decorator;
-import VASSAL.counters.EditablePiece;
-import VASSAL.counters.FreeRotator;
-import VASSAL.counters.GamePiece;
-import VASSAL.counters.KeyCommand;
-import VASSAL.counters.NonRectangular;
 import javafx.scene.transform.Affine;
 import mic.manuvers.ManeuverPaths;
 import mic.manuvers.PathPart;
@@ -147,19 +142,33 @@ public class AutoBumpDecorator extends Decorator implements EditablePiece {
         int pieceHeight = aideRect.getBounds().height;
 
         FreeRotator fR = (FreeRotator)Decorator.getDecorator(piece, FreeRotator.class);
+        Pivot pV = (Pivot)Decorator.getDecorator(piece,Pivot.class);
+
+//step1
         Shape transformed = AffineTransform
                 .getTranslateInstance(-338 + pieceWidth/2, -56 + pieceHeight/2)
                 .createTransformedShape(aideRect);
 
+/*
+
+        GamePiece step1 = newPiece(findPieceSlotByID(lastManeuver.getAide_gpID()));
+        step1.setPosition(transformed.getBounds().getLocation());
+        FreeRotator step1FR = (FreeRotator)Decorator.getDecorator(step1, FreeRotator.class);
+        step1FR.setAngle(fR.getAngle());
+        Command placeCommand = getMap().placeOrMerge(step1, new Point((int)step1.getPosition().getX(),(int)step1.getPosition().getY()));
+*/
+
 double aideAngle = convertAngleToGameLimits(-lastManeuver.getTemplateAngle());
 double shipAngle = convertAngleToGameLimits(this.getRotator().getAngle());
 double totalAngle = convertAngleToGameLimits(-lastManeuver.getTemplateAngle() + this.getRotator().getAngle());
-
-logToChat("aide " + Double.toString(aideAngle) + " ship " + Double.toString(shipAngle));
+//step2
         transformed = AffineTransform
-                .getRotateInstance(Math.toRadians(aideAngle))
+                .getRotateInstance(Math.toRadians(aideAngle),0,0)
                 .createTransformedShape(transformed);
 
+        this.previousCollisionVisualization.add(transformed);
+        this.previousCollisionVisualization.draw(getMap().getView().getGraphics(),getMap());
+/*
         transformed = AffineTransform
                 .getTranslateInstance(29,-57)
                 .createTransformedShape(transformed);
@@ -179,11 +188,15 @@ logToChat("aide " + Double.toString(aideAngle) + " ship " + Double.toString(ship
         this.previousCollisionVisualization.draw(getMap().getView().getGraphics(),getMap());
 
 
+*/
 
-        piece.setPosition(transformed.getBounds().getLocation());
-        fR.setAngle((int)totalAngle);
+fR.setAngle(aideAngle);
 
-        Command placeCommand = getMap().placeOrMerge(piece, new Point((int)piece.getPosition().getX(),(int)piece.getPosition().getY()));
+
+        piece.setPosition(new Point((int)(piece.getPosition().getX() + Math.cos(Math.toDegrees(-aideAngle))*transformed.getBounds().getCenterX()),
+                (int)(piece.getPosition().getY()-Math.sin(Math.toDegrees(-aideAngle))*transformed.getBounds().getCenterY())));
+
+       Command placeCommand = getMap().placeOrMerge(piece, new Point((int)piece.getPosition().getX(),(int)piece.getPosition().getY()));
         return placeCommand;
     }
 
